@@ -1,57 +1,99 @@
 import psycopg2
+import logging
 
-from src.DBCreate_module import DBConnection
 
+class DBManager:
+    def __init__(self, db_params):
+        self.db_params = db_params
 
-class DBManager(DBConnection):
-    """Класс для взаимодействия с базой данных"""
-
-    def __init__(self):
-        super().__init__()
-
-    def connect_to_db(self, query, params=None):
+    def _connect(self):
+        """Создает подключение к базе данных."""
         try:
-            with psycopg2.connect(
-                    host=self._host,
-                    database=self._database,
-                    user=self._username,
-                    port=self._port,
-                    password=self._password,
-            ) as conn:
-                conn.autocommit = True
-                with conn.cursor() as cur:
-                    cur.execute(query, params)
-                    result = cur.fetchall()
+            return psycopg2.connect(**self.db_params)
         except Exception as e:
-            print(f"Ошибка при выполнении запроса: {e}")
-            result = []
-        return result
+            logging.error(f"Ошибка подключения к базе данных: {e}")
+            raise
 
     def get_companies_and_vacancies_count(self):
-        """Метод для получения из базы данных названия компании и количества вакансий этой компании"""
-        execute_message = """SELECT employers.company_name, COUNT(vacancies.employer_id)
-        FROM employers JOIN vacancies USING (employer_id) GROUP BY employer_id"""
-        return f'Компании и количество вакансий:\n{self.connect_to_db(execute_message)}'
+        """Получает список компаний и количество вакансий у каждой компании."""
+        query = """
+        SELECT c.name, COUNT(v.id) AS vacancy_count
+        FROM companies c
+        LEFT JOIN vacancies v ON c.id = v.company_id
+        GROUP BY c.name;
+        """
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    return cursor.fetchall()
+        except Exception as e:
+            logging.error(f"Ошибка выполнения запроса get_companies_and_vacancies_count: {e}")
+            return []
 
     def get_all_vacancies(self):
-        """Метод для получения информации по вакансии и названию компании"""
-        execute_message = """SELECT employers.company_name, vacancies.vacancy_name, 
-        ((vacancies.salary_from + vacancies.salary_to) / 2), vacancies.url
-        FROM vacancies JOIN employers USING(employer_id)"""
-        return f'Список всех вакансий:\n{self.connect_to_db(execute_message)[:10]} \n ...'
+        """Получает список всех вакансий с указанием компании, названия вакансии, зарплаты и ссылки на вакансию."""
+        query = """
+        SELECT c.name, v.title, v.salary_min, v.salary_max, v.salary_currency, v.url
+        FROM vacancies v
+        JOIN companies c ON v.company_id = c.id;
+        """
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    return cursor.fetchall()
+        except Exception as e:
+            logging.error(f"Ошибка выполнения запроса get_all_vacancies: {e}")
+            return []
 
     def get_avg_salary(self):
-        """Метод для получения средней зарплаты по вакансиям"""
-        execute_message = """SELECT AVG((vacancies.salary_from + vacancies.salary_to) / 2) FROM vacancies"""
-        return f'Средняя зарплата по вакансиям:\n{self.connect_to_db(execute_message)}'
+        """Получает среднюю зарплату по всем вакансиям."""
+        query = """
+        SELECT AVG((salary_min + salary_max) / 2.0) AS avg_salary
+        FROM vacancies;
+        """
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    result = cursor.fetchone()
+                    return result[0] if result else 0
+        except Exception as e:
+            logging.error(f"Ошибка выполнения запроса get_avg_salary: {e}")
+            return 0
 
     def get_vacancies_with_higher_salary(self):
-        """Метод для получения вакансий с зарплатой выше среднего"""
-        execute_message = """SELECT * FROM vacancies WHERE ((vacancies.salary_from + vacancies.salary_to) / 2) > 
-(SELECT (AVG((vacancies.salary_from + vacancies.salary_to) / 2)) FROM vacancies)"""
-        return f'Вакансии с зарплатой выше среднего:\n{self.connect_to_db(execute_message)[:10]}'
+        """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
+        avg_salary = self.get_avg_salary()
+        query = """
+        SELECT c.name, v.title, v.salary_min, v.salary_max, v.salary_currency, v.url
+        FROM vacancies v
+        JOIN companies c ON v.company_id = c.id
+        WHERE (v.salary_min + v.salary_max) / 2.0 > %s;
+        """
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query, (avg_salary,))
+                    return cursor.fetchall()
+        except Exception as e:
+            logging.error(f"Ошибка выполнения запроса get_vacancies_with_higher_salary: {e}")
+            return []
 
-    def get_vacancies_with_keyword(self, keyword: str):
-        """Метод для получения вакансий по ключевому слову"""
-        execute_message = f"""SELECT * FROM vacancies WHERE vacancy_name ILIKE '%{keyword}%'"""
-        return f'Вакансии по ключевому слову:\n{self.connect_to_db(execute_message)[:10]}'
+    def get_vacancies_with_keyword(self, keyword):
+        """Получает список всех вакансий, в названии которых содержатся переданные в метод слова."""
+        query = """
+        SELECT c.name, v.title, v.salary_min, v.salary_max, v.salary_currency, v.url
+        FROM vacancies v
+        JOIN companies c ON v.company_id = c.id
+        WHERE v.title ILIKE %s;
+        """
+        try:
+            with self._connect() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query, (f'%{keyword}%',))
+                    return cursor.fetchall()
+        except Exception as e:
+            logging.error(f"Ошибка выполнения запроса get_vacancies_with_keyword: {e}")
+            return []
