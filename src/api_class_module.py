@@ -81,4 +81,3 @@ class FindEmployerFromHHApi(ApiHH):
             print(f"{employer.get('name')}, id: {employer.get('id')}")
         print("...")
         return employers
-

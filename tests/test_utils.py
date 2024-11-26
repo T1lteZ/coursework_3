@@ -4,7 +4,6 @@ from src.utils import get_top_vacancies
 
 
 class TestVacancyFunctions(unittest.TestCase):
-
     def setUp(self):
         """Инициализация перед каждым тестом"""
         self.vacancy_1 = MagicMock()
@@ -54,4 +53,3 @@ class TestVacancyFunctions(unittest.TestCase):
         self.assertIn("Data Scientist", result)
         self.assertIn("Java Developer", result)
         self.assertNotIn("Python Developer", result)
-
