@@ -5,7 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="390d4e53-b905-4a0f-85da-dd8ced094d39" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/vacancies.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DBCreate_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/DBCreate_module.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DBManager_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/DBManager_module.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api_class_module.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_class_module.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/files_class_module.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/vacancy_class.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_DBC.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_DBC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_api_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_api_class.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -21,6 +32,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -49,7 +65,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;
+    &quot;git-widget-placeholder&quot;: &quot;feature__01&quot;
   }
 }</component>
   <component name="SharedIndexes">
