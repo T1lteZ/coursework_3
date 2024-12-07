@@ -3,7 +3,7 @@ import psycopg2
 
 def create_data_base(database_name, params) -> None:
     """
-   Создание базы данных и таблиц с данными о компаниях и вакансиях
+    Создание базы данных и таблиц с данными о компаниях и вакансиях
     """
 
     conn = psycopg2.connect(dbname='postgres', **params)
@@ -21,24 +21,28 @@ def create_data_base(database_name, params) -> None:
         with conn.cursor() as cur:
             cur.execute("""
             CREATE TABLE IF NOT EXISTS companies (
-            company_id int,
-            company_name VARCHAR(255),
-            company_url TEXT
+                company_id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255) NOT NULL,
+                company_url TEXT
             )
             """)
 
         with conn.cursor() as cur:
             cur.execute("""
             CREATE TABLE IF NOT EXISTS vacancies (
-            company_name VARCHAR(255),
-            job_title VARCHAR,
-            link_to_vacancy TEXT,
-            salary_from int,
-            currency VARCHAR(20),
-            experience TEXT,
-            description TEXT, 
-            requirement TEXT)
+                id SERIAL PRIMARY KEY,
+                company_id INT,
+                job_title VARCHAR,
+                link_to_vacancy TEXT,
+                salary_from INT,
+                currency VARCHAR(20),
+                experience TEXT,
+                description TEXT, 
+                requirement TEXT,
+                FOREIGN KEY (company_id) REFERENCES companies(company_id)
+            )
             """)
+
     conn.commit()
     conn.close()
 
@@ -48,18 +52,21 @@ def save_data_to_db(data, database_name, params) -> None:
     Заполнение таблиц данными
     """
     insert_q = """
-        INSERT INTO vacancies (company_name, job_title, link_to_vacancy, salary_from, currency, experience, description,
+        INSERT INTO vacancies (company_id, job_title, link_to_vacancy, salary_from, currency, experience, description,
         requirement)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
     insert_q_2 = """
-                 INSERT INTO companies (company_id, company_name, company_url) VALUES (%s, %s, %s)
-                 """
+        INSERT INTO companies (company_id, company_name, company_url)
+        SELECT %s, %s, %s
+        WHERE NOT EXISTS (SELECT 1 FROM companies WHERE company_id = %s)
+        """
     with psycopg2.connect(dbname=database_name, **params) as conn:
         with conn.cursor() as cur:
             for vacancy in data:
-                cur.execute(insert_q_2, (vacancy['company_id'], vacancy['company_name'], vacancy['company_url']))
-                cur.execute(insert_q, (vacancy['company_name'], vacancy['job_title'], vacancy['link_to_vacancy'],
+                cur.execute(insert_q_2, (vacancy['company_id'], vacancy['company_name'], vacancy['company_url'], vacancy['company_id']))
+
+                cur.execute(insert_q, (vacancy['company_id'], vacancy['job_title'], vacancy['link_to_vacancy'],
                                        vacancy['salary_from'], vacancy['currency'], vacancy["experience"],
                                        vacancy['description'], vacancy['requirement']))
     conn.commit()

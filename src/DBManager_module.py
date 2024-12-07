@@ -12,9 +12,10 @@ class DBManager:
         Получает список всех компаний и количество вакансий у каждой компании
         """
         self.cur.execute("""
-        SELECT company_name, 
-        COUNT(*) FROM vacancies
-        GROUP BY company_name
+            SELECT c.company_name, COUNT(*) 
+            FROM vacancies v
+            JOIN companies c ON v.company_id = c.company_id
+            GROUP BY c.company_name
         """)
         rows = self.cur.fetchall()
         return {row[0]: row[1] for row in rows}
@@ -24,7 +25,9 @@ class DBManager:
         Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию
         """
         self.cur.execute("""
-        SELECT company_name, job_title, salary_from, currency, link_to_vacancy FROM vacancies
+        SELECT c.company_name, v.job_title, v.salary_from, v.currency, v.link_to_vacancy
+        FROM vacancies v
+        JOIN companies c ON v.company_id = c.company_id
         """)
         rows = self.cur.fetchall()
         return rows
